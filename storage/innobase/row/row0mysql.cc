@@ -1449,7 +1449,10 @@ error_exit:
 		return(err);
 	}
 
-	if (dict_table_has_fts_index(table)) {
+	if (dict_table_has_fts_index(table)
+	    && (!table->versioned()
+		|| !node->row->fields[table->vers_end].vers_history_row())) {
+
 		doc_id_t	doc_id;
 
 		/* Extract the doc id from the hidden FTS column */
@@ -2228,7 +2231,7 @@ row_update_cascade_for_mysql(
                 return(DB_FOREIGN_EXCEED_MAX_CASCADE);
         }
 
-	const trx_t* trx = thr_get_trx(thr);
+	trx_t* trx = thr_get_trx(thr);
 
 	if (table->versioned()) {
 		if (node->is_delete == PLAIN_DELETE) {

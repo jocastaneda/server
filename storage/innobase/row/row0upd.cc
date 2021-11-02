@@ -3544,3 +3544,15 @@ skip_append:
     }
   }
 }
+
+
+/** Only set row_end = CURRENT_TIMESTAMP/trx->id.
+Do not touch other fields at all.
+@param[in]	trx	transaction */
+void upd_node_t::vers_make_delete(trx_t* trx)
+{
+    update->n_fields = 0;
+    is_delete = VERSIONED_DELETE;
+    vers_update_fields(trx, table->vers_end);
+    trx->fts_next_doc_id = table->fts ? UINT64_UNDEFINED : 0;
+}

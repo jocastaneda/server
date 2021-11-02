@@ -614,17 +614,12 @@ public:
   void vers_make_update(const trx_t *trx)
   {
     vers_update_fields(trx, table->vers_start);
-        }
+  }
 
-	/** Only set row_end = CURRENT_TIMESTAMP/trx->id.
-	Do not touch other fields at all.
-	@param[in]	trx	transaction */
-        void vers_make_delete(const trx_t *trx)
-        {
-		update->n_fields = 0;
-		is_delete = VERSIONED_DELETE;
-                vers_update_fields(trx, table->vers_end);
-        }
+  /** Only set row_end = CURRENT_TIMESTAMP/trx->id.
+  Do not touch other fields at all.
+  @param[in]	trx	transaction */
+  void vers_make_delete(trx_t *trx);
 };
 
 #define	UPD_NODE_MAGIC_N	1579975
