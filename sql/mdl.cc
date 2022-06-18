@@ -2318,7 +2318,7 @@ MDL_context::acquire_lock(MDL_request *mdl_request, double lock_wait_timeout)
 
   if (lock_wait_timeout == 0)
   {
-    DBUG_PRINT("mdl", ("Nowait:  %s", ticket_msg));
+    DBUG_PRINT("mdl", ("Timeout(0): %s", ticket_msg));
     mysql_prlock_unlock(&lock->m_rwlock);
     MDL_ticket::destroy(ticket);
     my_error(ER_LOCK_WAIT_TIMEOUT, MYF(0));
