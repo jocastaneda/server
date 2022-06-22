@@ -40,6 +40,7 @@ Created Apr 25, 2012 Vasil Dimov
 #endif
 
 #include <vector>
+#include <thread>
 
 /** Minimum time interval between stats recalc for a given table */
 #define MIN_RECALC_INTERVAL	10 /* seconds */
@@ -431,16 +432,7 @@ void dict_stats_start()
 
 static void dict_stats_schedule(int ms)
 {
-  std::unique_lock<std::mutex> lk(dict_stats_mutex, std::defer_lock);
-  /*
-    Use try_lock() to avoid deadlock in dict_stats_shutdown(), which
-    uses dict_stats_mutex too. If there is simultaneous timer reschedule,
-    the first one will win, which is fine.
-  */
-  if (!lk.try_lock())
-  {
-    return;
-  }
+  std::lock_guard<std::mutex> lk(dict_stats_mutex);
   if (dict_stats_timer)
     dict_stats_timer->set_time(ms,0);
 }
@@ -453,7 +445,16 @@ void dict_stats_schedule_now()
 /** Shut down the dict_stats_thread. */
 void dict_stats_shutdown()
 {
-  std::lock_guard<std::mutex> lk(dict_stats_mutex);
+  std::unique_lock<std::mutex> lk(dict_stats_mutex, std::defer_lock);
+
+  /*
+    Use try_lock() to avoid deadlock in dict_stats_schedule(), which
+    uses dict_stats_mutex too.
+  */
+  while(!lk.try_lock())
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
   delete dict_stats_timer;
   dict_stats_timer= 0;
 }
